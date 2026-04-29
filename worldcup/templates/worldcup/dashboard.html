@@ -1,0 +1,372 @@
+{% load static l10n %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ selected_edition.name }} | Dashboard Football</title>
+    <link rel="stylesheet" href="{% static 'worldcup/dashboard.css' %}">
+</head>
+<body class="pitch-body">
+    <main class="page-shell">
+        <section class="hero-card panel">
+            <div class="hero-copy">
+                <p class="eyebrow">{{ selected_edition.kind_label }}</p>
+                <h1>Dashboard {{ selected_edition.name }}</h1>
+                <p class="hero-text">{{ selected_edition.description }}</p>
+
+                <div class="edition-switch">
+                    {% for edition in editions %}
+                        <a href="/?edition={{ edition.slug }}" class="edition-chip{% if edition.is_selected %} is-active{% endif %}">
+                            <span>{{ edition.slug }}</span>
+                            <strong>{{ edition.short_name }}</strong>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <div class="hero-actions">
+                    <a href="#matches" class="button button-primary">Voir le match center</a>
+                    {% if groups %}
+                        <a href="#groups" class="button button-secondary">Explorer les groupes</a>
+                    {% else %}
+                        <a href="#phases" class="button button-secondary">Voir les phases</a>
+                    {% endif %}
+                </div>
+
+                <div class="stat-grid">
+                    {% for stat in hero_stats %}
+                        <article class="stat-card">
+                            <strong>{{ stat.value }}</strong>
+                            <span>{{ stat.label }}</span>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <aside class="score-panel">
+                <span class="score-badge">{{ featured_match.badge }}</span>
+                <p class="score-headline">{{ featured_match.headline }}</p>
+                <p class="score-round">{{ featured_match.round_label }}</p>
+
+                <div class="scoreboard">
+                    <div class="team-side">
+                        <small>{{ featured_match.team1_code|default:'---' }}</small>
+                        <strong>{{ featured_match.team1_name }}</strong>
+                    </div>
+
+                    <div class="score-box{% if not featured_match.has_score %} is-fixture{% endif %}">
+                        {% if featured_match.has_score %}
+                            <span>{{ featured_match.score1 }}</span>
+                            <span class="separator">:</span>
+                            <span>{{ featured_match.score2 }}</span>
+                        {% else %}
+                            <span>VS</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="team-side team-side-away">
+                        <small>{{ featured_match.team2_code|default:'---' }}</small>
+                        <strong>{{ featured_match.team2_name }}</strong>
+                    </div>
+                </div>
+
+                <div class="score-meta">
+                    <span>{{ featured_match.date_label }}</span>
+                    {% if featured_match.time %}
+                        <span>{{ featured_match.time }}</span>
+                    {% endif %}
+                    {% if featured_match.location_label %}
+                        <span>{{ featured_match.location_label }}</span>
+                    {% endif %}
+                    {% if featured_match.score_note %}
+                        <span>{{ featured_match.score_note }}</span>
+                    {% endif %}
+                </div>
+
+                <p class="score-summary">{{ featured_match.summary }}</p>
+            </aside>
+        </section>
+
+        <section id="matches" class="panel section-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Match Center</p>
+                    <h2>{{ board_title }}</h2>
+                </div>
+                <p>{{ board_intro }}</p>
+            </div>
+
+            <div class="match-grid">
+                {% for match in board_matches %}
+                    <article class="match-card{% if match.has_score %} is-played{% endif %}">
+                        <div class="match-card-top">
+                            <span class="round-pill">{{ match.round_label }}</span>
+                            <span class="status-pill">{{ match.status_label }}</span>
+                        </div>
+
+                        <div class="match-scoreline">
+                            <div class="team-block">
+                                <small>{{ match.team1_code|default:'---' }}</small>
+                                <strong>{{ match.team1_name }}</strong>
+                            </div>
+
+                            <div class="match-score{% if not match.has_score %} is-fixture{% endif %}">
+                                {% if match.has_score %}
+                                    <span>{{ match.score1 }}</span>
+                                    <span class="separator">:</span>
+                                    <span>{{ match.score2 }}</span>
+                                {% else %}
+                                    <span>VS</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="team-block team-block-away">
+                                <small>{{ match.team2_code|default:'---' }}</small>
+                                <strong>{{ match.team2_name }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="match-card-footer">
+                            <span>{{ match.date_label }}</span>
+                            {% if match.time %}
+                                <span>{{ match.time }}</span>
+                            {% endif %}
+                            {% if match.location_label %}
+                                <span>{{ match.location_label }}</span>
+                            {% endif %}
+                            {% if match.score_note %}
+                                <span>{{ match.score_note }}</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% empty %}
+                    <p class="empty-state">Aucun match disponible pour cette edition.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if groups %}
+            <section id="groups" class="panel section-panel">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Phase de Groupes</p>
+                        <h2>Tableau des groupes</h2>
+                    </div>
+                    <p>Vue d ensemble des groupes et des classements de la competition.</p>
+                </div>
+
+                <div class="group-grid">
+                    {% for group in groups %}
+                        <article class="group-card">
+                            <div class="group-header">
+                                <span class="round-pill">{{ group.name }}</span>
+                                <span class="group-label">{% if group.standings %}Classement{% else %}Equipes{% endif %}</span>
+                            </div>
+
+                            {% if group.standings %}
+                                <table class="group-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pos</th>
+                                            <th>Equipe</th>
+                                            <th>J</th>
+                                            <th>GD</th>
+                                            <th>Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in group.standings %}
+                                            <tr{% if row.is_qualified %} class="is-qualified"{% endif %}>
+                                                <td>{{ row.pos }}</td>
+                                                <td>
+                                                    <span class="table-team">
+                                                        {% if row.team_code %}<small>{{ row.team_code }}</small>{% endif %}
+                                                        <strong>{{ row.team_name }}</strong>
+                                                    </span>
+                                                </td>
+                                                <td>{{ row.played }}</td>
+                                                <td>{{ row.goal_diff }}</td>
+                                                <td>{{ row.pts }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="team-chip-grid">
+                                    {% for team in group.teams %}
+                                        <span class="team-chip">
+                                            {% if team.code %}<small>{{ team.code }}</small>{% endif %}
+                                            <strong>{{ team.name }}</strong>
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <section id="stadiums" class="panel section-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Stades</p>
+                    <h2>Carte des stades</h2>
+                </div>
+                <p>Localisation des stades et informations principales pour chaque enceinte.</p>
+            </div>
+
+            {% if venue_map.markers or venues %}
+                <div class="venue-layout">
+                    {% if venue_map.markers %}
+                        <article class="map-card">
+                            <div class="map-card-top">
+                                <div>
+                                    <span class="round-pill">Carte</span>
+                                    <h3>{{ venue_map.marker_count }} stades localises{% if venue_map.host_label %} en {{ venue_map.host_label }}{% endif %}</h3>
+                                </div>
+                                <p>Selectionnez un stade pour afficher ses informations principales.</p>
+                            </div>
+
+                            <div id="{{ venue_map.map_id }}" class="stadium-map stadium-map-local">
+                                <div class="stadium-map-grid" aria-hidden="true"></div>
+                                <div class="stadium-map-surface" aria-hidden="true"></div>
+                                <span class="map-host-label">{{ venue_map.host_label }}</span>
+
+                                {% for marker in venue_map.markers %}
+                                    {% localize off %}
+                                    <button
+                                        type="button"
+                                        class="stadium-map-pin{% if forloop.first %} is-active{% endif %}"
+                                        style="left: {{ marker.x_percent }}%; top: {{ marker.y_percent }}%;"
+                                        data-name="{{ marker.name }}"
+                                        data-city="{{ marker.city }}"
+                                        data-capacity="{{ marker.capacity }}"
+                                        data-matches="{{ marker.matches_count }}"
+                                        data-meta="{{ marker.meta }}"
+                                        aria-label="{{ marker.name }}{% if marker.city %}, {{ marker.city }}{% endif %}"
+                                    >
+                                        <span class="stadium-pin" aria-hidden="true">
+                                            <svg viewBox="0 0 32 32" class="stadium-icon">
+                                                <path d="M6 10h20v4H6z"></path>
+                                                <path d="M8 15h16l3 9H5z"></path>
+                                                <path d="M11 6h10v3H11z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    {% endlocalize %}
+                                {% endfor %}
+
+                                {% with first_marker=venue_map.markers.0 %}
+                                    <div id="stadium-map-detail" class="map-detail-card">
+                                        <strong>{% if first_marker %}{{ first_marker.name }}{% else %}Stade{% endif %}</strong>
+                                        <p>
+                                            {% if first_marker %}
+                                                {% if first_marker.city %}{{ first_marker.city }}{% endif %}
+                                                {% if first_marker.capacity %}, {{ first_marker.capacity }} places{% endif %}
+                                                {% if first_marker.matches_count %}, {{ first_marker.matches_count }} matchs{% endif %}
+                                                {% if first_marker.meta %}, {{ first_marker.meta }}{% endif %}
+                                            {% else %}
+                                                Selectionnez un stade pour afficher ses informations.
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                {% endwith %}
+                            </div>
+                        </article>
+                    {% endif %}
+
+                    {% if venues %}
+                        <div class="venue-grid venue-grid-compact">
+                            {% for venue in venues %}
+                                <article class="venue-card{% if venue.lat and venue.lng %} is-mapped{% endif %}">
+                                    <span class="venue-mark"></span>
+                                    <strong>{{ venue.name }}</strong>
+                                    {% if venue.city %}
+                                        <p>{{ venue.city }}</p>
+                                    {% endif %}
+
+                                    <div class="venue-meta">
+                                        {% if venue.capacity %}
+                                            <small>{{ venue.capacity }} places</small>
+                                        {% endif %}
+                                        {% if venue.matches_count %}
+                                            <small>{{ venue.matches_count }} matchs</small>
+                                        {% endif %}
+                                        {% if venue.meta %}
+                                            <small>{{ venue.meta }}</small>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="empty-state">Les donnees de stades ne sont pas disponibles pour cette edition.</p>
+            {% endif %}
+        </section>
+
+        <section id="phases" class="panel section-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Competition</p>
+                    <h2>Phases et rythmes du tournoi</h2>
+                </div>
+                <p>Repartition des matchs par phase pour cette edition.</p>
+            </div>
+
+            <div class="stage-grid">
+                {% for stage in stage_cards %}
+                    <article class="stage-card">
+                        <strong>{{ stage.count }}</strong>
+                        <span>{{ stage.name }}</span>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    {% if venue_map.markers %}
+        <script>
+            (() => {
+                const mapElement = document.getElementById('{{ venue_map.map_id }}');
+                const detailElement = document.getElementById('stadium-map-detail');
+                if (!mapElement || !detailElement) {
+                    return;
+                }
+
+                const pins = Array.from(mapElement.querySelectorAll('.stadium-map-pin'));
+                const updateDetail = (pin) => {
+                    const details = [];
+                    if (pin.dataset.city) {
+                        details.push(pin.dataset.city);
+                    }
+                    if (pin.dataset.capacity && pin.dataset.capacity !== '0') {
+                        details.push(`${pin.dataset.capacity} places`);
+                    }
+                    if (pin.dataset.matches && pin.dataset.matches !== '0') {
+                        details.push(`${pin.dataset.matches} matchs`);
+                    }
+                    if (pin.dataset.meta) {
+                        details.push(pin.dataset.meta);
+                    }
+
+                    detailElement.innerHTML = `
+                        <strong>${pin.dataset.name}</strong>
+                        <p>${details.join(', ')}</p>
+                    `;
+
+                    pins.forEach((item) => item.classList.remove('is-active'));
+                    pin.classList.add('is-active');
+                };
+
+                pins.forEach((pin) => {
+                    pin.addEventListener('click', () => updateDetail(pin));
+                    pin.addEventListener('mouseenter', () => updateDetail(pin));
+                });
+            })();
+        </script>
+    {% endif %}
+</body>
+</html>
